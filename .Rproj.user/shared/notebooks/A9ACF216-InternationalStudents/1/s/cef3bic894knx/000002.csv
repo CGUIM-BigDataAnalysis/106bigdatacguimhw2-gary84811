@@ -1,0 +1,16 @@
+"0","ggplot()+ 
+  theme(legend.position=""none"")+
+  geom_map(data=map.world, map=map.world, aes(map_id=region, x=long, y=lat,fill=group))+ 
+  geom_point(data=world_lat_long,
+             aes(x=`Longitude (average)`, y=`Latitude (average)`,color=total),size=3)+
+  scale_color_continuous(low = ""yellow"",high = ""red"")+ 
+  guides(size=FALSE)
+"
+"2","Ignoring unknown aesthetics: x, y"
+"2","Warning message:
+"
+"2","In strsplit(code, ""\n"", fixed = TRUE) :"
+"2","
+ "
+"2"," input string 1 is invalid in this locale
+"

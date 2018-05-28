@@ -1,19 +1,5 @@
----
-title: "106-2 大數據分析方法 作業二"
-output: github_document
-author: Yi-Ju Tseng
----
+install.packages(c("readr","dplyr","ggplot2","choroplethr","rgdal","maptools","jsonlite"))
 
-作業完整說明[連結](https://docs.google.com/document/d/1aLGSsGXhgOVgwzSg9JdaNz2qGPQJSoupDAQownkGf_I/edit?usp=sharing)
-
-學習再也不限定在自己出生的國家，台灣每年有許多學生選擇就讀國外的大專院校，同時也有人多國外的學生來台灣就讀，透過分析[大專校院境外學生人數統計](https://data.gov.tw/dataset/6289)、[大專校院本國學生出國進修交流數](https://data.gov.tw/dataset/24730)、[世界各主要國家之我國留學生人數統計表](https://ws.moe.edu.tw/Download.ashx?u=C099358C81D4876CC7586B178A6BD6D5062C39FB76BDE7EC7685C1A3C0846BCDD2B4F4C2FE907C3E7E96F97D24487065577A728C59D4D9A4ECDFF432EA5A114C8B01E4AFECC637696DE4DAECA03BB417&n=4E402A02CE6F0B6C1B3C7E89FDA1FAD0B5DDFA6F3DA74E2DA06AE927F09433CFBC07A1910C169A1845D8EB78BD7D60D7414F74617F2A6B71DC86D17C9DA3781394EF5794EEA7363C&icon=..csv)可以了解103年以後各大專院校國際交流的情形。請同學分析以下議題，並以視覺化的方式呈現分析結果，呈現103年以後大專院校國際交流的情形。
-
-
-
-## 來台境外生分析
-### 資料匯入與處理
-```{r dataloadToTWN}
-#這是R Code Chunk
 library(readr)
 library(dplyr)
 library(ggplot2)
@@ -52,47 +38,33 @@ newschool <- rbind(school103,school104,school105,school106)
 newschool$非學位生_大陸研修生 <- gsub("…","0",newschool$非學位生_大陸研修生)
 newschool$非學位生_大陸研修生 <- as.numeric(newschool$非學位生_大陸研修生)
 
-```
 
-
-### 哪些國家來台灣唸書的學生最多呢？ 
-```{r ToTWNCountry}
-#這是R Code Chunk
 newdata1$學生總數<- rowSums(newdata1[3:11])
+
 newschool$學生總數 <- rowSums(newschool[4:12])
 
 ans1 <- group_by(newdata1,國別)%>%
 summarise(totalpeople = sum(學生總數))%>%
 arrange(desc(totalpeople))
 
-knitr::kable(head(ans1,10))
-
-
+  
 ans2  <- group_by(newschool,學校名稱)%>%
-summarise(total = sum(學生總數))%>%
-arrange(desc(total))
-knitr::kable(head(ans2,10))
-```
+  summarise(total = sum(學生總數))%>%
+  arrange(desc(total))
+    
 
-### 哪間大學的境外生最多呢？
-```{r ToTWNUniversity}
-#這是R Code Chunk
-ans2[1,]
-```
-
-### 各個國家來台灣唸書的學生人數條狀圖
-```{r ToTWNCountryBar}
-#這是R Code Chunk
 ggplot()+geom_bar(data = ans1,
                   aes(x = 國別,y = totalpeople),
                   stat = 'identity')+
                   theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
 
-### 各個國家來台灣唸書的學生人數面量圖
-```{r ToTWNCountryMap}
-#這是R Code Chunk
-library(rworldmap)
+ggplot()+geom_bar(data = ans3,
+                  aes(x = 對方學校.機構.國別.地區.,y = total),
+                  stat = 'identity')+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
 countries <- fromJSON("C:/Users/USER/Downloads/countries.json")  
 
 ans11 <- group_by(newdata1,國別)%>%
@@ -139,48 +111,20 @@ ggplot()+
   geom_map(data=map.world, map=map.world, aes(map_id=region, x=long, y=lat,fill=group))+ 
   geom_point(data=world_lat_long,
              aes(x=`Longitude (average)`, y=`Latitude (average)`,color=total),size=3)+
-  scale_color_continuous(low = "yellow",high = "red")+ 
+  scale_color_continuous(low = "sandybrown",high = "red")+ 
   guides(size=FALSE)
-```
 
-## 台灣學生國際交流分析
-
-### 資料匯入與處理
-```{r dataloadFromTWN}
-#這是R Code Chunk
 A <- read.csv("C:/Users/USER/Downloads/A.csv")
 stubd <- A[10799:nrow(A),]
-```
 
-### 台灣大專院校的學生最喜歡去哪些國家進修交流呢？
-```{r FromTWNCountry}
-#這是R Code Chunk
 ans3  <- group_by(stubd,對方學校.機構.國別.地區.)%>%
   summarise(total = n())%>%
   arrange(desc(total))
 
-```
-
-### 哪間大學的出國交流學生數最多呢？
-```{r FromTWNUniversity}
-#這是R Code Chunk
 ans4  <- group_by(stubd,學校名稱)%>%
   summarise(total = n())%>%
   arrange(desc(total))
-```
 
-### 台灣大專院校的學生最喜歡去哪些國家進修交流條狀圖
-```{r FromTWNCountryBar}
-#這是R Code Chunk
-ggplot()+geom_bar(data = ans3,
-                  aes(x = 對方學校.機構.國別.地區.,y = total),
-                  stat = 'identity')+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-### 台灣大專院校的學生最喜歡去哪些國家進修交流面量圖
-```{r FromTWNCountryMap}
-#這是R Code Chunk
 u1_new <- read_csv("C:/Users/USER/Downloads/u1_new.csv")
 
 library(XML)
@@ -224,25 +168,15 @@ ggmap(twmap)+geom_point(data = result,
                         aes(x=longitude,y=latitude,color = total),size=3)+
   scale_color_continuous(low = "yellow",high = "red")+ 
   guides(size=FALSE)
-```
 
-## 台灣學生出國留學分析
 
-### 資料匯入與處理
-```{r dataloadFromTWNAb}
-#這是R Code Chunk
+library(jsonlite)
+library(readr)
+library(dplyr)
+
 stuTW <- read_csv("C:/Users/USER/Downloads/105TW.csv")
-```
+head(stuTW[order(stuTW$總人數,decreasing = TRUE),],10)
 
-### 台灣學生最喜歡去哪些國家留學呢？
-```{r FromTWNAb}
-#這是R Code Chunk
-knitr::kable(head(stuTW[order(stuTW$總人數,decreasing = TRUE),],10))
-```
-
-### 台灣學生最喜歡去哪些國家留學面量圖
-```{r FromTWNAbMap}
-#這是R Code Chunk
 countries <- fromJSON("C:/Users/USER/Downloads/countries.json")  
 
 for(i in 1:nrow(stuTW)){
@@ -273,12 +207,11 @@ ggplot()+
   geom_map(data=map.world, map=map.world, aes(map_id=region, x=long, y=lat,fill=group))+ 
   geom_point(data=Map_stuTW,
              aes(x=`Longitude (average)`, y=`Latitude (average)`,color=總人數),size=3)+
-  scale_color_continuous(low = "yellow",high = "red")+ 
+  scale_color_continuous(low = "sandybrown",high = "red")+ 
   guides(size=FALSE)
-```
+  
+  
+  install.packages("rworldmap")
+  
 
-## 綜合分析
-
-請問來台讀書與離台讀書的來源國與留學國趨勢是否相同(5分)？想來台灣唸書的境外生，他們的母國也有很多台籍生嗎？請圖文並茂說明你的觀察(10分)。
-
-來台灣的和台灣出去留學的基本上沒有很大的相同性，通常台灣學生普遍往北歐，美國等地區留學，而來台灣念書的多半是來自對岸，及一些教育資源少於台灣的地區。
+  
